@@ -1,0 +1,121 @@
+heat_template_version: 2021-04-16
+
+description: >
+  Deploys a Jenkins controller and a production server.
+
+parameters:
+  jenkins_key_name:
+    type: string
+    label: Jenkins Key Name
+    description: Name of key-pair to be used for the Jenkins controller instance
+  prod_key_name:
+    type: string
+    label: Production Key Name
+    description: Name of key-pair to be used for the production instance
+  image:
+    type: string
+    label: Image ID
+    description: Image to be used for all instances
+
+resources:
+  ping_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: pingable
+      description: Allows pings
+      rules:
+        - protocol: icmp
+          remote_ip_prefix: 0.0.0.0/0
+  network:
+    type: OS::Neutron::Net
+  subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: network }
+      cidr: 192.168.0.0/24
+  ntnu-internal_router:
+    type: OS::Neutron::Router
+    properties:
+      external_gateway_info:
+        network: ntnu-internal
+  ntnu-internal_interface: # Connect the subnet to the router
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: ntnu-internal_router }
+      subnet: { get_resource: subnet }
+
+  jenkins_server:
+    type: OS::Nova::Server
+    properties:
+      name: Jenkins
+      # Our account limits are 2 vCPUs and 8GB RAM, so each instance can only
+      # have 1 vCPU and 4GB RAM.
+      flavor: gx2.1c4r
+      image: { get_param: image }
+      security_groups:
+        - { get_resource: ping_secgroup }
+        - { get_resource: jenkins_secgroup }
+      networks:
+        - network: { get_resource: network }
+      key_name: { get_param: jenkins_key_name }
+  jenkins_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: jenkins-controller
+      description: Allows SSH and HTTP
+      rules:
+        - protocol: tcp
+          remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 22
+          port_range_max: 22
+        - protocol: tcp
+          remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 80
+          port_range_max: 80
+  jenkins_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: ntnu-internal
+  jenkins_floating_ip_association:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: { get_resource: jenkins_floating_ip }
+      port_id: { get_attr: [jenkins_server, addresses, { get_resource: network }, 0, port] }
+
+  prod_server:
+    type: OS::Nova::Server
+    properties:
+      name: ProductionWebServer
+      # Our account limits are 2 vCPUs and 8GB RAM, so each instance can only
+      # have 1 vCPU and 4GB RAM.
+      flavor: gx2.1c4r
+      image: { get_param: image }
+      security_groups:
+        - { get_resource: ping_secgroup }
+        - { get_resource: prod_secgroup }
+      networks:
+        - network: { get_resource: network }
+      key_name: { get_param: prod_key_name }
+  prod_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: production-webserver
+      description: Allows SSH and HTTP
+      rules:
+        - protocol: tcp
+          remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 22
+          port_range_max: 22
+        - protocol: tcp
+          remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 80
+          port_range_max: 80
+  prod_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: ntnu-internal
+  prod_floating_ip_association:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: { get_resource: prod_floating_ip }
+      port_id: { get_attr: [prod_server, addresses, { get_resource: network }, 0, port] }

@@ -1,0 +1,3 @@
+parameters:
+  # Ubuntu Server 22.04 (Jammy) amd64 20220518
+  image: c15481d3-e1ac-4331-9379-c63cb14d12b1
