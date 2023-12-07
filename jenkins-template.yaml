@@ -83,7 +83,7 @@ resources:
     type: OS::Neutron::SecurityGroup
     properties:
       name: jenkins-controller
-      description: Allows SSH and HTTP
+      description: Allows SSH, HTTP, and the default Jenkins port
       rules:
         - protocol: tcp
           remote_ip_prefix: 0.0.0.0/0
@@ -93,6 +93,10 @@ resources:
           remote_ip_prefix: 0.0.0.0/0
           port_range_min: 80
           port_range_max: 80
+        - protocol: tcp
+          remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 8080
+          port_range_max: 8080
   jenkins_floating_ip:
     type: OS::Neutron::FloatingIP
     properties:
