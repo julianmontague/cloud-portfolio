@@ -14,10 +14,21 @@ parameters:
     description: Name of key-pair to be used for the production instance
   image:
     type: string
-    label: Image ID
-    description: Image to be used for all instances
+    label: Ubuntu Image ID
+    description: Image to be used for all instances. Must be Ubuntu.
 
 resources:
+  security_cloud-config:
+    type: OS::Heat::CloudConfig
+    properties:
+      cloud_config:
+        package_upgrade: true
+        package_reboot_if_required: true
+        write_files:
+          - path: /etc/ssh/sshd_config.d/00-ubuntu-user-only.conf
+            content: |
+              PermitRootLogin no
+              AllowUsers ubuntu
   ping_secgroup:
     type: OS::Neutron::SecurityGroup
     properties:
@@ -58,6 +69,8 @@ resources:
       networks:
         - network: { get_resource: network }
       key_name: { get_param: jenkins_key_name }
+      user_data_format: SOFTWARE_CONFIG
+      user_data: { get_resource: security_cloud-config }
   jenkins_secgroup:
     type: OS::Neutron::SecurityGroup
     properties:
@@ -96,6 +109,8 @@ resources:
       networks:
         - network: { get_resource: network }
       key_name: { get_param: prod_key_name }
+      user_data_format: SOFTWARE_CONFIG
+      user_data: { get_resource: security_cloud-config }
   prod_secgroup:
     type: OS::Neutron::SecurityGroup
     properties:
