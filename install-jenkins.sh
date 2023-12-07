@@ -19,4 +19,7 @@ echo deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] \
   /etc/apt/sources.list.d/jenkins.list > /dev/null
 
 sudo apt-get update
-sudo apt-get install --assume-yes temurin-17-jdk jenkins
+# Java needs to be installed before attempting to install Jenkins,
+# otherwise "Errors [are] encountered while processing jenkins"
+sudo apt-get install --assume-yes temurin-17-jdk
+sudo apt-get install --assume-yes jenkins
