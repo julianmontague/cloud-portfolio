@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Numbers App: API Endpoints</title>
+    </head>
+    <body>
+    {% if endpoints %}
+        <ul>
+            {% for endpoint in endpoints %}
+            <li>
+                <a href="{{endpoint.path}}">{{endpoint.display}}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No endpoints available.</p>
+    {% endif %}
+    </body>
+</html>
