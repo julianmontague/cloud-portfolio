@@ -17,6 +17,14 @@ parameters:
     label: Ubuntu Image ID
     description: Image to be used for all instances. Must be Ubuntu.
 
+outputs:
+  jenkins_floating_ip:
+    description: Jenkins controller instance floating IP address on ntnu-internal
+    value: { get_attr: [ jenkins_floating_ip, floating_ip_address ] }
+  prod_floating_ip:
+    description: Production instance floating IP address on ntnu-internal
+    value: { get_attr: [ prod_floating_ip, floating_ip_address ] }
+
 resources:
   security_cloud-config:
     type: OS::Heat::CloudConfig
