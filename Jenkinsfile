@@ -17,7 +17,7 @@ pipeline {
 
     stage('Test') {
       steps {
-        sh label: 'Run Django tests', script: 'podman run django-numbers python3 -Wa manage.py test'
+        sh label: 'Run Django tests', script: 'podman run django-numbers-app python3 -Wa manage.py test'
       }
     }
 
