@@ -23,3 +23,11 @@ sudo apt-get update
 # otherwise "Errors [are] encountered while processing jenkins"
 sudo apt-get install --assume-yes temurin-17-jdk
 sudo apt-get install --assume-yes jenkins
+
+# This can just be done through a normal cloud-config, it's in the Ubuntu universe
+sudo apt-get install -y podman
+
+# Allow rootless Podman
+sudo usermod --add-subuids 165536-231071 --add-subgids 165536-231071 jenkins
+sudo loginctl enable-linger $(id -u jenkins)
+sudo -u jenkins podman system migrate
