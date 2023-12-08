@@ -15,6 +15,12 @@ pipeline {
       }
     }
 
+    stage('Test') {
+      steps {
+        sh label: 'Run Django tests', script: 'podman run django-numbers python3 -Wa manage.py test'
+      }
+    }
+
     stage('Archive') {
       steps {
         sh label: 'Save container image to file', script: 'podman image save -o image.tar django-numbers-app'
