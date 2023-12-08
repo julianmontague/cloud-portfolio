@@ -11,13 +11,11 @@ pipeline {
 
     stage('Archive') {
       steps {
-        node {
-          sh label: 'Save container image to file', script: 'podman image save -o image.tar django-numbers-app'
+        sh label: 'Save container image to file', script: 'podman image save -o image.tar django-numbers-app'
 
-          archiveArtifacts artifacts: 'image.tar', followSymlinks: false, onlyIfSuccessful: true
+        archiveArtifacts artifacts: 'image.tar', followSymlinks: false, onlyIfSuccessful: true
 
-          cleanWs()
-        }
+        cleanWs()
       }
     }
   }
